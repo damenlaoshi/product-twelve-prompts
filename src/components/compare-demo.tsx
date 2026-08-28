@@ -156,6 +156,8 @@ function AnswerPane({
   ruby: boolean;
   emphasize?: boolean;
 }) {
+  const blocks = pairBlocks(zh, en);
+
   return (
     <div
       className={cn(
@@ -171,22 +173,82 @@ function AnswerPane({
       >
         {kicker}
         <span className="ml-2 font-normal tracking-wide text-faint">{kickerEn}</span>
+        <span className="ml-2 font-normal tracking-normal text-faint normal-case">
+          · 中文 / 拼音 / English
+        </span>
       </p>
-      <div className="max-h-[28rem] overflow-auto px-4 py-3">
-        <p
-          className={cn(
-            "zh font-serif text-[15px] whitespace-pre-wrap text-ink-soft",
-            ruby ? "leading-none" : "leading-relaxed",
-          )}
-        >
-          <PinyinText text={zh} />
-        </p>
-        <p className="mt-3 border-t border-line pt-3 font-sans text-sm leading-relaxed whitespace-pre-wrap text-muted">
-          {en}
-        </p>
+      <div className="max-h-[32rem] space-y-4 overflow-auto px-4 py-3">
+        {blocks.map((block, i) => (
+          <div key={i} className="border-b border-line/70 pb-4 last:border-0 last:pb-0">
+            {block.zh ? (
+              <p
+                className={cn(
+                  "zh font-serif text-[16px] whitespace-pre-wrap text-ink",
+                  ruby ? "leading-none" : "leading-relaxed",
+                )}
+              >
+                <PinyinText text={block.zh} />
+              </p>
+            ) : null}
+            {block.en ? (
+              <p className="mt-2 font-sans text-[12.5px] leading-relaxed whitespace-pre-wrap text-muted">
+                {block.en}
+              </p>
+            ) : null}
+          </div>
+        ))}
       </div>
     </div>
   );
+}
+
+function pairBlocks(zh: string, en: string): { zh: string; en: string }[] {
+  const zPara = splitBlocks(zh);
+  const ePara = splitBlocks(en);
+  if (zPara.length === ePara.length && zPara.length > 0) {
+    return zip(zPara, ePara);
+  }
+
+  const zLine = zh.split("\n").map((s) => s.trim()).filter(Boolean);
+  const eLine = en.split("\n").map((s) => s.trim()).filter(Boolean);
+  if (zLine.length === eLine.length && zLine.length > 1) {
+    return zip(zLine, eLine);
+  }
+
+  const zSen = splitZhSentences(zh);
+  const eSen = splitEnSentences(en);
+  if (zSen.length === eSen.length && zSen.length > 1) {
+    return zip(zSen, eSen);
+  }
+
+  const n = Math.max(zPara.length, ePara.length, 1);
+  const out: { zh: string; en: string }[] = [];
+  for (let i = 0; i < n; i++) {
+    out.push({ zh: zPara[i] ?? (i === 0 ? zh : ""), en: ePara[i] ?? (i === 0 ? en : "") });
+  }
+  return out.filter((b) => b.zh || b.en);
+}
+
+function zip(zh: string[], en: string[]) {
+  return zh.map((z, i) => ({ zh: z, en: en[i] ?? "" }));
+}
+
+function splitBlocks(s: string) {
+  return s.split(/\n\s*\n/).map((x) => x.trim()).filter(Boolean);
+}
+
+function splitZhSentences(s: string) {
+  return s
+    .split(/(?<=[。！？；])/)
+    .map((x) => x.trim())
+    .filter(Boolean);
+}
+
+function splitEnSentences(s: string) {
+  return s
+    .split(/(?<=[.!?])\s+/)
+    .map((x) => x.trim())
+    .filter(Boolean);
 }
 
 function NoteList({
