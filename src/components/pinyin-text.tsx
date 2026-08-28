@@ -1,7 +1,30 @@
-import { pinyin } from "pinyin-pro";
+import { customPinyin, pinyin } from "pinyin-pro";
 import { useMemo } from "react";
 import { useSettings } from "@/lib/settings";
 import { cn } from "@/lib/utils";
+
+customPinyin({
+  重看: "chóng kàn",
+  重新: "chóng xīn",
+  重复: "chóng fù",
+  重来: "chóng lái",
+  重做: "chóng zuò",
+  重写: "chóng xiě",
+  重建: "chóng jiàn",
+  重现: "chóng xiàn",
+  重叠: "chóng dié",
+  重试: "chóng shì",
+  重读: "chóng dú",
+  重开: "chóng kāi",
+  重审: "chóng shěn",
+  重温: "chóng wēn",
+  重逢: "chóng féng",
+  重播: "chóng bō",
+  重装: "chóng zhuāng",
+  重放: "chóng fàng",
+  重阳: "chóng yáng",
+  推倒重来: "tuī dǎo chóng lái",
+});
 
 type Token =
   | { kind: "zh"; ch: string; py: string }
@@ -76,13 +99,21 @@ function tokenize(text: string): Token[] {
   const out: Token[] = [];
   for (const item of raw) {
     if (item.isZh && item.pinyin) {
-      for (const ch of item.origin) {
+      const chars = [...item.origin];
+      const pys =
+        chars.length === 1
+          ? [item.pinyin]
+          : item.pinyin.split(/[\s·]+/).filter(Boolean);
+      chars.forEach((ch, i) => {
         out.push({
           kind: "zh",
           ch,
-          py: item.origin.length === 1 ? item.pinyin : pinyin(ch, { toneType: "symbol", v: true }),
+          py:
+            pys[i] ||
+            pinyin(ch, { toneType: "symbol", v: true }) ||
+            ch,
         });
-      }
+      });
       continue;
     }
     for (const part of item.origin.split(/(\n)/)) {
