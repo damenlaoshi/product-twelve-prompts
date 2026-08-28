@@ -108,12 +108,16 @@ export function CompareDemo({
         <AnswerPane
           kicker="简易答案"
           kickerEn="Simple answer"
-          text={demo.simpleAnswerEn}
+          zh={demo.simpleAnswerZh}
+          en={demo.simpleAnswerEn}
+          ruby={ruby}
         />
         <AnswerPane
           kicker="完整答案"
           kickerEn="Full-prompt answer"
-          text={demo.complexAnswerEn}
+          zh={demo.complexAnswerZh}
+          en={demo.complexAnswerEn}
+          ruby={ruby}
           emphasize
         />
       </div>
@@ -140,12 +144,16 @@ export function CompareDemo({
 function AnswerPane({
   kicker,
   kickerEn,
-  text,
+  zh,
+  en,
+  ruby,
   emphasize,
 }: {
   kicker: string;
   kickerEn: string;
-  text: string;
+  zh: string;
+  en: string;
+  ruby: boolean;
   emphasize?: boolean;
 }) {
   return (
@@ -164,9 +172,17 @@ function AnswerPane({
         {kicker}
         <span className="ml-2 font-normal tracking-wide text-faint">{kickerEn}</span>
       </p>
-      <div className="max-h-64 overflow-auto px-4 py-3">
-        <p className="font-sans text-sm leading-relaxed whitespace-pre-wrap text-ink-soft">
-          {text}
+      <div className="max-h-[28rem] overflow-auto px-4 py-3">
+        <p
+          className={cn(
+            "zh font-serif text-[15px] whitespace-pre-wrap text-ink-soft",
+            ruby ? "leading-none" : "leading-relaxed",
+          )}
+        >
+          <PinyinText text={zh} />
+        </p>
+        <p className="mt-3 border-t border-line pt-3 font-sans text-sm leading-relaxed whitespace-pre-wrap text-muted">
+          {en}
         </p>
       </div>
     </div>
